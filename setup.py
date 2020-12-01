@@ -9,10 +9,11 @@ with open("README.rst") as f:
 install_requires = [
     "buvar",
     "aiohttp",
-    "attrs>=19.1,<20.0",
-    "structlog>=20.1.0",
+    "attrs>=19.1",
+    "structlog>=20.1.1",
     "orjson",
     "pendulum",
+    "prance[osv,icu,cli]",
 ]
 extras_require = {
     "tests": [
@@ -35,7 +36,7 @@ entry_points = {"pytest11": ["buvar_aiohttp = buvar_aiohttp.testing"]}
 
 setup_kwargs = {
     "name": "buvar_aiohttp",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Asyncio plugin for buvar",
     "long_description": description,
     "long_description_content_type": "text/x-rst",

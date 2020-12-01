@@ -11,7 +11,7 @@ try:
 except ImportError:  # pragma: no cover
     SSLContext = typing.Any  # type: ignore
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __version_info__ = tuple(__version__.split("."))
 
 
