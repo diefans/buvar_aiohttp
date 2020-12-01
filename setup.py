@@ -10,7 +10,7 @@ install_requires = [
     "buvar",
     "aiohttp",
     "attrs>=19.1",
-    "structlog>=20.1.1",
+    "structlog",
     "orjson",
     "pendulum",
     "prance[osv,icu,cli]",
@@ -36,7 +36,7 @@ entry_points = {"pytest11": ["buvar_aiohttp = buvar_aiohttp.testing"]}
 
 setup_kwargs = {
     "name": "buvar_aiohttp",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "description": "Asyncio plugin for buvar",
     "long_description": description,
     "long_description_content_type": "text/x-rst",
