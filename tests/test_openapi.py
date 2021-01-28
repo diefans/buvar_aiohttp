@@ -15,8 +15,8 @@ def buvar_config_source(buvar_config_source):
 
 @pytest.mark.asyncio
 @pytest.mark.buvar_plugins("buvar.config", "tests.openapi")
-async def test_openapi(buvar_aiohttp_app, test_client):
-    client = await test_client(buvar_aiohttp_app)
+async def test_openapi(buvar_aiohttp_app, aiohttp_client):
+    client = await aiohttp_client(buvar_aiohttp_app)
 
     res = await client.post("/api/foo")
 

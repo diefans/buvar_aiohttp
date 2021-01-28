@@ -1,22 +1,23 @@
+import functools
+import logging
 import socket
 import typing
 
 import aiohttp.web
 import attr
-from buvar import plugin, config, context
-import structlog
+from buvar import config, context, di, plugin, util
 
 try:
     from ssl import SSLContext
 except ImportError:  # pragma: no cover
     SSLContext = typing.Any  # type: ignore
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"
 __version_info__ = tuple(__version__.split("."))
 
 
 @attr.s(auto_attribs=True)
-class AioHttpConfig:
+class AioHttpConfig(config.Config, section="aiohttp"):
     host: typing.Optional[str] = None
     port: typing.Optional[int] = None
     path: typing.Optional[str] = None
@@ -25,22 +26,16 @@ class AioHttpConfig:
     ssl_context: typing.Optional[SSLContext] = None
     backlog: int = 128
     handle_signals: bool = False
+    access_log: typing.Optional[logging.Logger] = "aiohttp.log:access_logger"
 
 
-class AccessLogger(aiohttp.abc.AbstractAccessLogger):  # noqa: R0903
-    def log(self, request, response, time):  # noqa: R0201
-        log = structlog.get_logger()
-        log.info(
-            "Access",
-            remote=request.remote,
-            method=request.method,
-            content_type=request.content_type,
-            rx=request.content_length,
-            tx=response.content_length,
-            path=request.path,
-            time=time,
-            status=response.status,
-        )
+@functools.partial(config.relaxed_converter.register_structure_hook, logging.Logger)
+def _structure_logger(d, t):
+    if isinstance(d, t):
+        return d
+    elif isinstance(d, str):
+        return util.resolve_dotted_name(d)
+    return d
 
 
 async def prepare_app():
@@ -59,8 +54,7 @@ async def prepare_server(load: plugin.Loader):
     await load(prepare_app)
     aiohttp_app = context.get(aiohttp.web.Application)
 
-    config_source = context.get(config.ConfigSource)
-    aiohttp_config = context.add(config_source.load(AioHttpConfig, "aiohttp"))
+    aiohttp_config = await di.nject(AioHttpConfig)
 
     yield aiohttp.web._run_app(  # noqa: W0212
         aiohttp_app, **attr.asdict(aiohttp_config), print=None
