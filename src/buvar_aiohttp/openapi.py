@@ -200,5 +200,5 @@ class OpenApiApplication(aiohttp.web.Application):
 
 async def prepare(load: plugin.Loader):
     # just load aiohttp
-    await load(".")
+    await load(".", "buvar.config")
     di.register(Operation.adapt)

@@ -2,11 +2,6 @@ import pytest
 
 
 @pytest.fixture
-def loop(event_loop):
-    return event_loop
-
-
-@pytest.fixture
 def buvar_config_source(buvar_config_source):
     buvar_config_source.env_prefix = ("BUVAR",)
     buvar_config_source.merge({"openapi": {"path": "tests:api.yaml"}})
@@ -15,10 +10,8 @@ def buvar_config_source(buvar_config_source):
 
 @pytest.mark.asyncio
 @pytest.mark.buvar_plugins("buvar.config", "tests.openapi")
-async def test_openapi(buvar_aiohttp_app, aiohttp_client):
-    client = await aiohttp_client(buvar_aiohttp_app)
-
-    res = await client.post("/api/foo")
+async def test_openapi(buvar_aiohttp_client):
+    res = await buvar_aiohttp_client.post("/api/foo")
 
     assert res.status == 200
     data = await res.json()
@@ -41,5 +34,5 @@ async def test_openapi(buvar_aiohttp_app, aiohttp_client):
         },
     }
 
-    res = await client.get("/openapi")
+    res = await buvar_aiohttp_client.get("/openapi")
     assert res.status == 200

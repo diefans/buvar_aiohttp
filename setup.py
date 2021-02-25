@@ -14,6 +14,7 @@ install_requires = [
     "orjson",
     "pendulum",
     "prance[osv,icu,cli]",
+    "jsl",
 ]
 extras_require = {
     "tests": [

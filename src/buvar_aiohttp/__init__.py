@@ -62,5 +62,6 @@ async def prepare_server(load: plugin.Loader):
 
 
 async def prepare(load: plugin.Loader):
+    await load("buvar.config")
     await load(prepare_client_session)
     await load(prepare_server)
