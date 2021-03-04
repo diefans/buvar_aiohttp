@@ -3,9 +3,7 @@ import typing
 
 import aiohttp.web
 import attr
-
 from buvar import context, util
-import orjson
 
 from . import attrs
 
@@ -28,16 +26,38 @@ class Jsonify(metaclass=abc.ABCMeta):
             return obj
 
 
-class OrjsonJsonify(Jsonify):
-    def loads(self, str):
-        return orjson.loads(str)
+try:
+    import orjson
 
-    @util.methdispatch
-    def default(self, obj):
-        return super().default(obj)
+    class OrjsonJsonify(Jsonify):
+        def loads(self, str):
+            return orjson.loads(str)
 
-    def dumps(self, obj):
-        return orjson.dumps(obj, default=self.default)
+        @util.methdispatch
+        def default(self, obj):
+            return super().default(obj)
+
+        def dumps(self, obj):
+            return orjson.dumps(obj, default=self.default)
+
+    jsonify = OrjsonJsonify()
+
+
+except ImportError:
+    import json
+
+    class DefaultJsonify(Jsonify):
+        def loads(self, str):
+            return json.loads(str)
+
+        @util.methdispatch
+        def default(self, obj):
+            return super().default(obj)
+
+        def dumps(self, obj):
+            return json.dumps(obj, default=self.default)
+
+    jsonify = DefaultJsonify()
 
 
 def response(
@@ -58,4 +78,4 @@ def response(
 
 
 async def prepare():
-    context.add(OrjsonJsonify())
+    context.add(jsonify)
