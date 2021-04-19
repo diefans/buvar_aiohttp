@@ -24,3 +24,18 @@ async def test_app_dummy(buvar_aiohttp_app, aiohttp_client, caplog):
     resp = await client.get("/")
     assert "Hello, world" == await resp.text()
     assert caplog
+
+
+def test_structure_config():
+    import socket
+    import buvar_aiohttp
+
+    s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    try:
+        source = {"sock": s.fileno()}
+        config = buvar_aiohttp.config.relaxed_converter.structure(
+            source, buvar_aiohttp.AioHttpConfig
+        )
+        assert isinstance(config.sock, socket.socket)
+    finally:
+        s.close()

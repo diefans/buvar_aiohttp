@@ -12,7 +12,7 @@ try:
 except ImportError:  # pragma: no cover
     SSLContext = typing.Any  # type: ignore
 
-__version__ = "0.2.1"
+__version__ = "0.3.0"
 __version_info__ = tuple(__version__.split("."))
 
 
@@ -27,6 +27,21 @@ class AioHttpConfig(config.Config, section="aiohttp"):
     backlog: int = 128
     handle_signals: bool = False
     access_log: typing.Optional[logging.Logger] = "aiohttp.log:access_logger"
+
+
+@functools.partial(config.relaxed_converter.register_structure_hook, socket.socket)
+def _structure_socket(d, t):
+    # try parsing a FD number first
+    try:
+        fd_num = int(d)
+    except ValueError:
+        pass
+    else:
+        import socket
+
+        fd_sock = socket.fromfd(fd_num, socket.AF_UNIX, socket.SOCK_STREAM)
+        return fd_sock
+    raise ValueError(f"Socket string `{d}` not implemented", d)
 
 
 @functools.partial(config.relaxed_converter.register_structure_hook, logging.Logger)
