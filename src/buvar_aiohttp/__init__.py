@@ -5,14 +5,15 @@ import typing
 
 import aiohttp.web
 import attr
-from buvar import config, context, di, plugin, util
+import uritools
+from buvar import config, context, di, fork, plugin, util
 
 try:
     from ssl import SSLContext
 except ImportError:  # pragma: no cover
     SSLContext = typing.Any  # type: ignore
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __version_info__ = tuple(__version__.split("."))
 
 
@@ -65,11 +66,36 @@ async def prepare_client_session(teardown: plugin.Teardown):
     teardown.add(aiohttp_client_session.close())
 
 
+def override_aiohttp_config(aiohttp_config: AioHttpConfig):
+    aiohttp_sock = None
+
+    if aiohttp_config.host or aiohttp_config.port:
+        aiohttp_uri = uritools.uricompose(
+            "tcp", aiohttp_config.host or "0.0.0.0", port=aiohttp_config.port or None
+        )
+        aiohttp_sock = context.get(fork.Socket, name=str(aiohttp_uri))
+
+    elif aiohttp_config.path:
+        aiohttp_uri = uritools.uricompose("unix", path=aiohttp_config.path)
+        aiohttp_sock = context.get(fork.Socket, name=str(aiohttp_uri))
+
+    if aiohttp_sock:
+        aiohttp_config.sock = aiohttp_sock
+        aiohttp_config.host = None
+        aiohttp_config.port = None
+
+    # cache this config
+    context.add(aiohttp_config)
+
+
 async def prepare_server(load: plugin.Loader):
     await load(prepare_app)
     aiohttp_app = context.get(aiohttp.web.Application)
 
     aiohttp_config = await di.nject(AioHttpConfig)
+
+    # override if buvar provides socket already
+    override_aiohttp_config(aiohttp_config)
 
     yield aiohttp.web._run_app(  # noqa: W0212
         aiohttp_app, **attr.asdict(aiohttp_config), print=None
