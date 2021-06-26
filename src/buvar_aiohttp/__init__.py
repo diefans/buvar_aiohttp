@@ -27,7 +27,9 @@ class AioHttpConfig(config.Config, section="aiohttp"):
     ssl_context: typing.Optional[SSLContext] = None
     backlog: int = 128
     handle_signals: bool = False
-    access_log: typing.Optional[logging.Logger] = "aiohttp.log:access_logger"
+    access_log: typing.Optional[logging.Logger] = util.resolve_dotted_name(
+        "aiohttp.log:access_logger"
+    )
 
 
 @functools.partial(config.relaxed_converter.register_structure_hook, socket.socket)
