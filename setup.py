@@ -7,7 +7,7 @@ with open("README.rst") as f:
 
 
 install_requires = [
-    "buvar>=0.42.0",
+    "buvar>=0.42.3",
     "aiohttp",
     "attrs>=19.1",
     "structlog",
