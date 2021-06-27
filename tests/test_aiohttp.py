@@ -85,19 +85,3 @@ async def test_sites(settings, site_cls):
     else:
         site = await config.site(runner)
         assert type(site).__name__ == site_cls
-
-
-@pytest.mark.asyncio
-@pytest.mark.buvar_plugins("buvar_aiohttp")
-async def test_config_run(mocker, buvar_aiohttp_app):
-    from buvar import context, Cancel
-    import buvar_aiohttp
-
-    cancel = context.get(Cancel)
-    cancel.set()
-    config = context.add(buvar_aiohttp.AioHttpConfig())
-    mock_site = mocker.patch.object(config, "site")
-    await config.run(buvar_aiohttp_app)
-
-    mock_site.assert_called()
-    mock_site.return_value.start.assert_called()
