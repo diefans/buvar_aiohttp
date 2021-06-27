@@ -9,7 +9,7 @@ import pendulum
 
 class Converter(cattr.Converter):
     """This py:obj:`Converter` is relaxed in terms of ignoring undefined and
-       defaulting to None on optional attributes.
+    defaulting to None on optional attributes.
     """
 
     def structure_attrs_fromdict(self, obj, cl):
@@ -37,6 +37,8 @@ class Converter(cattr.Converter):
                 else:
                     continue
 
+            if name[0] == "_":
+                name = name[1:]
             conv_obj[name] = dispatch(type_)(val, type_)
 
         return cl(**conv_obj)
