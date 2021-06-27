@@ -33,5 +33,5 @@ def buvar_aiohttp_client(
     def run():
         return event_loop.run_until_complete(client_coro)
 
-    client = testing.wrap_in_buvar_stage_context(buvar_plugin_context, run)()
+    client = testing.wrap_in_buvar_plugin_context(buvar_plugin_context, run)()
     return client

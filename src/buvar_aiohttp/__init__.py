@@ -1,7 +1,7 @@
 import functools
 import logging
 import socket
-import typing
+import typing as t
 
 import aiohttp.web
 import attr
@@ -11,7 +11,7 @@ from buvar import config, context, di, fork, plugin, util
 try:
     from ssl import SSLContext
 except ImportError:  # pragma: no cover
-    SSLContext = typing.Any  # type: ignore
+    SSLContext = t.Any  # type: ignore
 
 __version__ = "0.4.3"
 __version_info__ = tuple(__version__.split("."))
@@ -19,15 +19,15 @@ __version_info__ = tuple(__version__.split("."))
 
 @attr.s(auto_attribs=True)
 class AioHttpConfig(config.Config, section="aiohttp"):
-    host: typing.Optional[str] = None
-    port: typing.Optional[int] = None
-    path: typing.Optional[str] = None
-    sock: typing.Optional[socket.socket] = None
+    host: t.Optional[str] = None
+    port: t.Optional[int] = None
+    path: t.Optional[str] = None
+    sock: t.Optional[socket.socket] = None
     shutdown_timeout: float = 60.0
-    ssl_context: typing.Optional[SSLContext] = None
+    ssl_context: t.Optional[SSLContext] = None
     backlog: int = 128
     handle_signals: bool = False
-    access_log: typing.Optional[logging.Logger] = util.resolve_dotted_name(
+    access_log: t.Optional[logging.Logger] = util.resolve_dotted_name(
         "aiohttp.log:access_logger"
     )
 
@@ -53,7 +53,6 @@ class AioHttpConfig(config.Config, section="aiohttp"):
             self.port = None
 
     async def site(self, runner: aiohttp.web.AppRunner):
-        await runner.setup()
         if self.host or self.port:
             return aiohttp.web.TCPSite(
                 runner,
@@ -86,17 +85,24 @@ class AioHttpConfig(config.Config, section="aiohttp"):
         )
 
     async def run(self, app: aiohttp.web.Application):
-        aiohttp_runner = context.add(
-            aiohttp.web.AppRunner(app, access_log=self.access_log)
+        runner = context.add(
+            aiohttp.web.AppRunner(
+                app,
+                access_log=self.access_log,
+                handle_signals=self.handle_signals,
+            )
         )
-        aiohttp_config = await di.nject(AioHttpConfig)
-        site = await aiohttp_config.site(aiohttp_runner)
+        await runner.setup()
+        try:
+            config = await di.nject(AioHttpConfig)
+            site = await config.site(runner)
 
-        cancel = context.get(plugin.Cancel)
+            cancel = context.get(plugin.Cancel)
 
-        await site.start()
-        await cancel.wait()
-        await aiohttp_runner.cleanup()
+            await site.start()
+            await cancel.wait()
+        finally:
+            await runner.cleanup()
 
 
 @functools.partial(config.relaxed_converter.register_structure_hook, socket.socket)
