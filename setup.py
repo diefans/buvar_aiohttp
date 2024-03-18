@@ -17,20 +17,20 @@ install_requires = [
 extras_require = {
     "tests": [
         "pytest>=4.6",
-        "pytest-cov>=^2.7,<3.0",
+        "pytest-cov>=2.7,<3.0",
         "pytest-asyncio>=0.11.0",
-        "pytest-benchmark>=3.2.2<4.0",
-        "mock>=3.0<4.0",
-        "pytest-mock>=1.10<2.0",
-        "pytest-watch>=4.2<5.0",
-        "pytest-randomly>=3.1<4.0",
-        "pytest-doctestplus>=0.5<1.0",
+        "pytest-benchmark>=3.2.2,<4.0",
+        "mock>=3.0,<4.0",
+        "pytest-mock>=1.10,<2.0",
+        "pytest-watch>=4.2,<5.0",
+        "pytest-randomly>=3.1,<4.0",
+        "pytest-doctestplus>=0.5,<1.0",
         "pytest-aiohttp",
         "pytest-anything",
         "pdbpp",
     ],
 }
-extras_require["all"] = list(itertools.chain(extras_require.values()))
+# extras_require["all"] = list(itertools.chain(extras_require.values()))
 entry_points = {"pytest11": ["buvar_aiohttp = buvar_aiohttp.testing"]}
 
 setup_kwargs = {
