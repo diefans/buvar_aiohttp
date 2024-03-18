@@ -35,7 +35,7 @@ entry_points = {"pytest11": ["buvar_aiohttp = buvar_aiohttp.testing"]}
 
 setup_kwargs = {
     "name": "buvar_aiohttp",
-    "version": "0.4.4",
+    "version": "0.4.5",
     "description": "aiohttp plugin for buvar",
     "long_description": description,
     "long_description_content_type": "text/x-rst",
