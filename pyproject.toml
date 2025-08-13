@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "buvar_aiohttp"
+requires-python = ">= 3.11"
+version = "0.4.5"
+description = "aiohttp plugin for buvar"
+readme = "README.rst"
+dependencies = ["aiohttp", "buvar>=0.44.7", "pydantic", "structlog", "yarl"]
+
+[project.entry-points.pytest11]
+buvar_aiohttp = "buvar_aiohttp.testing"
+
+[dependency-groups]
+dev = [
+    "commitizen",
+    "pre-commit",
+    "pdbpp",
+    "pytest>=4.6",
+    "pytest-cov>=2.7",
+    "pytest-asyncio>=1.0.0",
+    "pytest-benchmark>=3.2.2",
+    "pytest-doctestplus>=0.5,<1.0",
+    "mock>=3.0",
+    "pytest-mock>=1.10",
+    "pytest-watch>=4.2",
+    "pytest-randomly>=3.1",
+    "pytest-anything",
+    "pytest-aiohttp",
+    "pytest-anything",
+    "ruff",
+]
+
+[tool.ruff]
+target-version = "py311"
+lint.extend-select = [
+    "I",     # sorting
+    "UP035", # deprected imports (such as typing.List)
+]
+
+[tool.pytest.ini_options]
+filterwarnings = ['error']
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.4.5"
+tag_format = "$version"
+bump_message = "release: $current_version → $new_version [skip-ci]"
+
+version_files = [
+    "VERSION",
+    "pyproject.toml:version",
+    "src/buvar_aiohttp/__init__.py",
+]

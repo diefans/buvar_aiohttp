@@ -1,0 +1,45 @@
+name: "Build and Tests"
+
+env:
+  # renovate: datasource=github-tags depName=uv lookupName=astral-sh/uv
+  UV_VERSION: 0.7.13
+
+on:
+  push:
+    branches:
+      - "*"
+    # tag is already build in branch
+    tags-ignore:
+      - "*"
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  pytest:
+    if: "!contains(github.event.head_commit.message, '[skip-ci]')"
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["3.13", "3.12", "3.11"]
+
+    name: Testing ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          # Install a specific version of uv.
+          version: ${{ env.UV_VERSION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.version }}"
+
+      - run: uv sync --dev --frozen
+      - run: uv run ruff check
+      - run: uv run pytest --cov buvar

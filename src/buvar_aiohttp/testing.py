@@ -2,12 +2,6 @@ import pytest
 
 
 @pytest.fixture
-def loop(event_loop):
-    # use event loop from pytest-asyncio
-    return event_loop
-
-
-@pytest.fixture
 def buvar_aiohttp_app(buvar_plugin_context, buvar_stage):
     import aiohttp.web
 
@@ -22,8 +16,9 @@ def buvar_aiohttp_client(
     buvar_aiohttp_app,
     aiohttp_client,
     buvar_plugin_context,
-    event_loop,
 ):
+    import asyncio
+
     from buvar import testing
 
     client_coro = aiohttp_client(
@@ -31,7 +26,7 @@ def buvar_aiohttp_client(
     )
 
     def run():
-        return event_loop.run_until_complete(client_coro)
+        return asyncio.get_event_loop().run_until_complete(client_coro)
 
     client = testing.wrap_in_buvar_plugin_context(buvar_plugin_context, run)()
     return client

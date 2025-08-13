@@ -1,33 +1,29 @@
 import functools
 import logging
 import socket
-import typing as t
+from ssl import SSLContext
 
 import aiohttp.web
-import attr
-import uritools
+import yarl
 from buvar import config, context, di, fork, plugin, util
-
-try:
-    from ssl import SSLContext
-except ImportError:  # pragma: no cover
-    SSLContext = t.Any  # type: ignore
+from pydantic import ConfigDict
+from pydantic.dataclasses import dataclass
 
 __version__ = "0.4.5"
 __version_info__ = tuple(__version__.split("."))
 
 
-@attr.s(auto_attribs=True)
+@dataclass(config=ConfigDict(arbitrary_types_allowed=True))
 class AioHttpConfig(config.Config, section="aiohttp"):
-    host: t.Optional[str] = None
-    port: t.Optional[int] = None
-    path: t.Optional[str] = None
-    sock: t.Optional[socket.socket] = None
+    host: str | None = None
+    port: int | None = None
+    path: str | None = None
+    sock: socket.socket | None = None
     shutdown_timeout: float = 60.0
-    ssl_context: t.Optional[SSLContext] = None
+    ssl_context: SSLContext | None = None
     backlog: int = 128
     handle_signals: bool = False
-    access_log: t.Optional[logging.Logger] = util.resolve_dotted_name(
+    access_log: logging.Logger | None = util.resolve_dotted_name(
         "aiohttp.log:access_logger"
     )
 
@@ -36,15 +32,13 @@ class AioHttpConfig(config.Config, section="aiohttp"):
         aiohttp_sock = None
 
         if self.host or self.port:
-            aiohttp_uri = uritools.uricompose(
-                "tcp",
-                self.host or "0.0.0.0",
-                port=self.port or None,
-            )
+            aiohttp_uri = yarl.URL(f"tcp://{self.host or '0.0.0.0'}")
+            if self.port:
+                aiohttp_uri.port = self.port
             aiohttp_sock = context.get(fork.Socket, name=str(aiohttp_uri), default=None)
 
         elif self.path:
-            aiohttp_uri = uritools.uricompose("unix", path=self.path)
+            aiohttp_uri = yarl.URL().with_scheme("unix").with_path(self.path)
             aiohttp_sock = context.get(fork.Socket, name=str(aiohttp_uri), default=None)
 
         if aiohttp_sock:
@@ -129,9 +123,22 @@ def _structure_logger(d, t):
     return d
 
 
+@aiohttp.web.middleware
+async def buvar_context_push_middleware(request, handler):
+    """Push the stack of components for each request."""
+    context.buvar_context.set(context.push())
+    resp = await handler(request)
+    return resp
+
+
 async def prepare_app():
     context.add(
-        aiohttp.web.Application(middlewares=[aiohttp.web.normalize_path_middleware()])
+        aiohttp.web.Application(
+            middlewares=[
+                buvar_context_push_middleware,
+                aiohttp.web.normalize_path_middleware(),
+            ]
+        )
     )
 
 
