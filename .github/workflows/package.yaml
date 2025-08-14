@@ -71,23 +71,10 @@ jobs:
       - name: Build wheels
         run: |
           export PATH="/opt/python/${{ matrix.version }}/bin:${PATH}"
-          uv build --wheel
-          ls -la ./dist
-          auditwheel repair ./dist/*.whl --plat ${{ matrix.platform }}
+          uv build --wheel -o wheelhouse
+          # we do not need this - no binaries in the wheel
+          # auditwheel repair ./dist/*.whl --plat ${{ matrix.platform }}
 
-      # - name: build wheels
-      #   run: |
-      #     export PATH="/opt/python/${{ matrix.version }}/bin:${PATH}"
-      #     pip install setuptools
-      #     pip wheel -w ./wheelhouse cython pip
-      #     pip install -U cython pip -f ./wheelhouse
-      #     python setup.py bdist_wheel -d wheels
-      #     auditwheel repair ./wheels/${PROJECT}*${{ matrix.version }}*.whl \
-      #       --plat ${{ matrix.platform }} -w ./dist
-      #     pip install ./dist/${PROJECT}*${{ matrix.version }}*.whl
-      #     pip install "${PROJECT}[tests]" -f ./dist -f ./wheelhouse
-      #     pytest tests
-      #
       - name: archive artifacts
         uses: actions/upload-artifact@v4
         with:
