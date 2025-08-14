@@ -9,7 +9,7 @@ from buvar import config, context, di, fork, plugin, util
 from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
-__version__ = "0.4.5"
+__version__ = "0.5.0"
 __version_info__ = tuple(__version__.split("."))
 
 
