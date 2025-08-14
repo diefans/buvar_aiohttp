@@ -1,3 +1,9 @@
+## 0.5.2 (2025-08-14)
+
+### Fix
+
+- **wheels**: simple package/publish
+
 ## 0.5.1 (2025-08-14)
 
 ### Fix
