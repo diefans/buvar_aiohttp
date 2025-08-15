@@ -2,11 +2,12 @@ import functools
 import logging
 import socket
 from ssl import SSLContext
+from typing import Annotated
 
 import aiohttp.web
 import yarl
 from buvar import config, context, di, fork, plugin, util
-from pydantic import ConfigDict
+from pydantic import BeforeValidator, ConfigDict
 from pydantic.dataclasses import dataclass
 
 __version__ = "0.5.2"
@@ -23,18 +24,25 @@ class AioHttpConfig(config.Config, section="aiohttp"):
     ssl_context: SSLContext | None = None
     backlog: int = 128
     handle_signals: bool = False
-    access_log: logging.Logger | None = util.resolve_dotted_name(
-        "aiohttp.log:access_logger"
-    )
 
-    def __attrs_post_init__(self):
+    # TODO: use Annotated to turn a string into a logger
+    access_log: Annotated[
+        logging.Logger | None, BeforeValidator(util.resolve_dotted_name)
+    ] = None
+    # util.resolve_dotted_name(
+    #     "aiohttp.log:access_logger"
+    # )
+
+    def __post_init__(self):
+        if self.access_log is False:
+            self.access_log = None
         # override with shared sockets
         aiohttp_sock = None
 
         if self.host or self.port:
             aiohttp_uri = yarl.URL(f"tcp://{self.host or '0.0.0.0'}")
             if self.port:
-                aiohttp_uri.port = self.port
+                aiohttp_uri = aiohttp_uri.with_port(self.port)
             aiohttp_sock = context.get(fork.Socket, name=str(aiohttp_uri), default=None)
 
         elif self.path:
