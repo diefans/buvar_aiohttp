@@ -4,7 +4,7 @@ requires = ["setuptools"]
 [project]
 name = "buvar_aiohttp"
 requires-python = ">= 3.11"
-version = "0.5.2"
+version = "0.5.3"
 description = "aiohttp plugin for buvar"
 readme = "README.rst"
 dependencies = ["aiohttp", "buvar>=0.44.7", "pydantic", "structlog", "yarl"]
@@ -44,7 +44,7 @@ filterwarnings = ['error']
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.5.2"
+version = "0.5.3"
 tag_format = "$version"
 bump_message = "release: $current_version → $new_version [skip-ci]"
 

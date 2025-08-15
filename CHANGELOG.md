@@ -1,3 +1,9 @@
+## 0.5.3 (2025-08-15)
+
+### Fix
+
+- **config**: use BeforeValidator for Logger instance
+
 ## 0.5.2 (2025-08-14)
 
 ### Fix
